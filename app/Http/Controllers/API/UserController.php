@@ -5,7 +5,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller; 
 use App\User; 
 use Illuminate\Support\Facades\Auth; 
-use Auth;
+use Illuminate\Support\Facades\Validator;
+// use Auth;
 
 class UserController extends Controller
 {
@@ -31,19 +32,51 @@ class UserController extends Controller
     	* @return \Illuminate\Http\Response
     	*/
     public function register(Request $request) {
-    	//$validator = Validator::make($request->all()[
-    	$this->validate($request,[
-    		'name' 			=> 'required',
-    		'email' 		=> 'required|email',
-    		'password' 		=> 'required',
-    		'c_password' 	=> 'required|same:password'
-    	]);
-    	$user = new User;
-    	$user->name = $request->name;
-    	$user->email = $request->email;
-    	$user->password = Hash::make($request->password);
-    	$user->save();
-    	return response()->json(['success' => $success], $this->successStatus);
+    	if ($request) {
+    		if($request->email) {
+    			if($request->password) {
+    				if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+    					$checkEmailExist = User::where('email', $request->email)->first();
+    					if ($checkEmailExist) {
+    						return response()->json([
+								'status' => false,
+								'message' => "User already exists. Please login!!!"
+							]);
+    					} else {
+	    					$user = new User();
+					    	$user->name = $request->name;
+					    	$user->email = $request->email;
+					    	$user->password = \Hash::make($request->password);
+					    	$user->save();
+					    	return response()->json([
+								'status' => true,
+								'message' => "Successfully added."
+							]);
+    					}
+    				} else {
+    					return response()->json([
+							'status' => false,
+							'message' => "Given email is not a valid email. PLEASE CHECK IT!!!"
+						]);
+    				}
+    			} else {
+    				return response()->json([
+						'status' => false,
+						'message' => "Please provide password."
+					]);
+    			}
+    		} else {
+    			return response()->json([
+					'status' => false,
+					'message' => "Please provide email."
+				]);
+    		}
+    	} else {
+    		return response()->json([
+				'status' => false,
+				'message' => "Please provide some data."
+			]);
+    	}
     }
     /**
     	* details API

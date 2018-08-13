@@ -14,7 +14,6 @@ class ApiRegisterController extends RegisterController
      */
     public function create(Request $request)
     {
-        dd("sdfgkjh");
         $errors = $this->validator($request->all())->errors();
 
         if(count($errors))
