@@ -26,15 +26,15 @@ Route::post('login', 'API\UserController@login');
 Route::post('register', 'API\UserController@register');
 // List Articles
 Route::get('articles', 'ArticleController@index');
-
+// Delete User
+Route::delete('delete', 'API\UserController@delete');
+// Update User
+Route::put('update/{email}', 'API\UserController@update');
 // List Single Article
 Route::get('article/{id}', 'ArticleController@show');
-
 // Create new Article
 Route::post('article', 'ArticleController@store');
-
 // Update Article
-Route::put('article', 'ArticleController@store');
-
+Route::put('article', 'ArticleController@store');	
 // Delete Article
 Route::delete('article/{id}', 'ArticleController@destroy');

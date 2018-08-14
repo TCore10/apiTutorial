@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\User; 
 use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Facades\Validator;
+use Mail;
 // use Auth;
 
 class UserController extends Controller
@@ -48,6 +49,10 @@ class UserController extends Controller
 					    	$user->email = $request->email;
 					    	$user->password = \Hash::make($request->password);
 					    	$user->save();
+					    	Mail::send('text', ['user' => $user->name], function ($m) use ($user) {
+					            //$m->from('work.test.tier5@gmail.com', 'Your Application');
+					            $m->to($user->email, $user->name)->subject('Registration!!');
+     					   });
 					    	return response()->json([
 								'status' => true,
 								'message' => "Successfully added."
@@ -86,5 +91,80 @@ class UserController extends Controller
     	public function details() {
     		$user = Auth::user();
     		return response()->json(['success' => $user], $this->successStatus);
+    	}
+    /**
+    	* delete API
+    	*
+    	* @return \Illuminate\Http\Response
+    	*/
+    	public function delete(Request $request) {
+    		if($request) {
+    			if (filter_var($request->email, FILTER_VALIDATE_EMAIL)) {
+    				$user = User::where('email',$request->email)->first();
+    				if ($user) {
+    					if ($user->delete()) {
+    						User::where('email', $request->email)->delete();
+    						return response()->json([
+								'status' => true,
+								'message' => "User deleted Successfully."
+							]);
+    					} else {
+    						return response()->json([
+								'status' => false,
+								'message' => "Something went wrong."
+							]);
+    					}
+    				} else {
+    					return response()->json([
+							'status' => false,
+							'message' => "User not found."
+						]);
+    				}
+    			} else {
+    				return response()->json([
+						'status' => false,
+						'message' => "Given email is not valid. PLEASE CHECK EMAIL!!!"
+					]);
+    			}
+    		} else {
+    			return response()->json([
+					'status' => false,
+					'message' => "Please provide email in URL."
+				]);
+    		}
+    		/*$user = User::where('email',$email)->first();
+        	if($user->delete()){
+            return response()->json([
+				'status' => true,
+				'message' => "User deleted Successfully."
+			]);
+	        } else {
+	        	return response()->json([
+					'status' => false,
+					'message' => "Something went Wrong."
+				]);
+	        }*/
+    	}
+    	public function update(Request $request) {
+
+    		//dd($request->email);
+    		$user = User::where('email',$request->email)->first();
+    		//dd($user);
+    		if($user) {
+				//$user = User::find($email);
+			    $user->name = $request->name;
+			    $user->password = \Hash::make($request->password);
+			    //dd($user->name);
+			    $user->save();
+			    return response()->json([
+					'status' => true,
+					'message' => "Successfully Updated."
+				]);
+			} else {
+				return response()->json([
+					'status' => false,
+					'message' => "Email does not exist"
+				]);
+			}
     	}
 }
